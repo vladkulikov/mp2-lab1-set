@@ -7,8 +7,33 @@
 
 #include "tbitfield.h"
 
+inline int Counter()
+{
+	int count = 0, size = sizeof(TELEM) * 8;
+	while (size >>= 1)
+	{
+		count++;
+	}
+	return count;
+}
+
 TBitField::TBitField(int len)
 {
+	if (len < 0)
+	{
+		throw 1;
+	}
+	BitLen = len;
+	MemLen = (BitLen + sizeof(TELEM) * 8 - 1) >> Counter();
+	pMem = new TELEM[MemLen];
+	if (pMem == nullptr)
+	{
+		throw 2;
+    }
+	for (int i = 0; i < MemLen; i++)
+	{
+		pMem[i] = 0;
+	}
 }
 
 TBitField::TBitField(const TBitField &bf) // конструктор копирования
@@ -52,6 +77,11 @@ void TBitField::SetBit(const int n) // установить бит
 
 void TBitField::ClrBit(const int n) // очистить бит
 {
+	if (n >= BitLen || n < 0)
+	{
+		throw 3;
+	}
+	pMem[GetMemIndex(n)] &= (~GetMemMask(n));
 }
 
 int TBitField::GetBit(const int n) const // получить значение бита
